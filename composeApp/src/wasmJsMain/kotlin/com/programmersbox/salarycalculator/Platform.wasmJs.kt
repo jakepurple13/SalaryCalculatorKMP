@@ -6,6 +6,4 @@ class WasmPlatform: Platform {
 
 actual fun getPlatform(): Platform = WasmPlatform()
 
-private val numberFormatter = NumberFormat.getCurrencyInstance()
-
-actual fun Double.formatCurrency(): String = numberFormatter.format(this)
+actual fun Double.formatCurrency(): String = this.asDynamic().toFixed(2)
