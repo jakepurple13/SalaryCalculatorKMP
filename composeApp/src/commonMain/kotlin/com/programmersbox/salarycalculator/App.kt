@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -25,7 +26,16 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun App() {
     MaterialTheme(
-        if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
+        colorScheme = if (isSystemInDarkTheme())
+            darkColorScheme(
+                primary = Color(0xff90CAF9),
+                secondary = Color(0xff90CAF9),
+            )
+        else
+            lightColorScheme(
+                primary = Color(0xff2196F3),
+                secondary = Color(0xff90CAF9),
+            )
     ) {
         Surface {
             Box(
