@@ -5,3 +5,7 @@ class WasmPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = WasmPlatform()
+
+private val numberFormatter = NumberFormat.getCurrencyInstance()
+
+actual fun Double.formatCurrency(): String = numberFormatter.format(this)

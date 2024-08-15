@@ -43,8 +43,6 @@ fun App() {
 internal fun SalaryUI() {
     val salaryData = remember { SalaryData() }
 
-    val numberFormatter = remember { NumberFormat.getCurrencyInstance() }
-
     var showPerAmount by remember { mutableStateOf(false) }
 
     if (showPerAmount) {
@@ -98,23 +96,19 @@ internal fun SalaryUI() {
                     }
                     item {
                         Text(
-                            numberFormatter.format(
-                                animateValueAsState(
-                                    it.second.unadjusted,
-                                    DoubleConverter
-                                ).value
-                            ),
+                            animateValueAsState(
+                                it.second.unadjusted,
+                                DoubleConverter
+                            ).value.formatCurrency(),
                             textAlign = TextAlign.Center
                         )
                     }
                     item {
                         Text(
-                            numberFormatter.format(
-                                animateValueAsState(
-                                    it.second.adjusted,
-                                    DoubleConverter
-                                ).value
-                            ),
+                            animateValueAsState(
+                                it.second.adjusted,
+                                DoubleConverter
+                            ).value.formatCurrency(),
                             textAlign = TextAlign.Center
                         )
                     }
