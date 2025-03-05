@@ -5,9 +5,9 @@ import androidx.compose.animation.core.TwoWayConverter
 import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -82,95 +82,173 @@ internal fun SalaryUI() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Salary Calculator") }
+                title = { Text("Salary Calculator") },
+                actions = {
+                    Text("Is Raise")
+                    Spacer(Modifier.width(8.dp))
+                    Switch(
+                        checked = salaryData.isRaise,
+                        onCheckedChange = { salaryData.isRaise = it }
+                    )
+                }
             )
         },
     ) { padding ->
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(padding)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            contentPadding = padding,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier.padding(horizontal = 2.dp)
+            salaryItems(salaryData.amounts)
+            item(
+                span = { GridItemSpan(maxLineSpan) }
             ) {
-                item {}
-                item { Text("Unadjusted", textAlign = TextAlign.Center) }
-                item { Text("Adjusted", textAlign = TextAlign.Center) }
-                salaryData.amounts.infoMap().forEach {
-                    item {
-                        Text(
-                            it.first.name,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    item {
-                        Text(
-                            animateValueAsState(
-                                it.second.unadjusted,
-                                DoubleConverter
-                            ).value.formatCurrency(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    item {
-                        Text(
-                            animateValueAsState(
-                                it.second.adjusted,
-                                DoubleConverter
-                            ).value.formatCurrency(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    NumberField(
+                        salaryData.amount,
+                        onValueChange = { salaryData.amount = it },
+                        labelText = "Amount",
+                        prefix = { Text("$") },
+                        modifier = Modifier.weight(.75f)
+                    )
+
+                    Spacer(Modifier.width(20.dp))
+
+                    AssistChip(
+                        onClick = { showPerAmount = true },
+                        label = { Text(salaryData.perAmount.name) },
+                        modifier = Modifier.weight(.25f)
+                    )
                 }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
+            item(
+                span = { GridItemSpan(maxLineSpan) }
             ) {
                 NumberField(
-                    salaryData.amount,
-                    onValueChange = { salaryData.amount = it },
-                    labelText = "Amount",
-                    prefix = { Text("$") }
-                )
-
-                Spacer(Modifier.width(20.dp))
-
-                AssistChip(
-                    onClick = { showPerAmount = true },
-                    label = { Text(salaryData.perAmount.name) }
+                    salaryData.hoursPerWeek,
+                    onValueChange = { salaryData.hoursPerWeek = it },
+                    labelText = "Hours per Week",
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            NumberField(
-                salaryData.hoursPerWeek,
-                onValueChange = { salaryData.hoursPerWeek = it },
-                labelText = "Hours per Week",
-                modifier = Modifier.fillMaxWidth()
-            )
+            item(
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                NumberField(
+                    salaryData.daysPerWeek,
+                    onValueChange = { salaryData.daysPerWeek = it },
+                    labelText = "Days per Week",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            NumberField(
-                salaryData.daysPerWeek,
-                onValueChange = { salaryData.daysPerWeek = it },
-                labelText = "Days per Week",
-                modifier = Modifier.fillMaxWidth()
-            )
+            item(
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                NumberField(
+                    salaryData.holidaysPerYear,
+                    onValueChange = { salaryData.holidaysPerYear = it },
+                    labelText = "Holidays per Year",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            NumberField(
-                salaryData.holidaysPerYear,
-                onValueChange = { salaryData.holidaysPerYear = it },
-                labelText = "Holidays per Year",
-                modifier = Modifier.fillMaxWidth()
-            )
+            item(
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                NumberField(
+                    salaryData.vacationDaysPerYear,
+                    onValueChange = { salaryData.vacationDaysPerYear = it },
+                    labelText = "Vacation Days per Year",
+                    imeAction = ImeAction.Done,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            NumberField(
-                salaryData.vacationDaysPerYear,
-                onValueChange = { salaryData.vacationDaysPerYear = it },
-                labelText = "Vacation Days per Year",
-                imeAction = ImeAction.Done,
-                modifier = Modifier.fillMaxWidth()
+            salaryData.raise?.let { raise ->
+                item(
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text("Raise")
+                        HorizontalDivider()
+                    }
+                }
+                item(
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    NumberField(
+                        salaryData.raisePercentage,
+                        onValueChange = { salaryData.raisePercentage = it },
+                        labelText = "Raise %",
+                        imeAction = ImeAction.Done,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                salaryItems(raise.salaryResults)
+
+                salaryData.fullRaiseValues?.let { results ->
+                    item(
+                        span = { GridItemSpan(maxLineSpan) }
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Text("Full Values")
+                            HorizontalDivider()
+                        }
+                    }
+                    salaryItems(results)
+                }
+            }
+        }
+    }
+}
+
+fun LazyGridScope.salaryItems(salaryResults: SalaryResults) {
+    item {}
+    item { Text("Unadjusted", textAlign = TextAlign.Center) }
+    item { Text("Adjusted", textAlign = TextAlign.Center) }
+    salaryResults.infoMap().forEach {
+        item {
+            Text(
+                it.first.name,
+                textAlign = TextAlign.Center
+            )
+        }
+        item {
+            Text(
+                animateValueAsState(
+                    it.second.unadjusted,
+                    DoubleConverter
+                ).value.formatCurrency(),
+                textAlign = TextAlign.Center
+            )
+        }
+        item {
+            Text(
+                animateValueAsState(
+                    it.second.adjusted,
+                    DoubleConverter
+                ).value.formatCurrency(),
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -224,6 +302,29 @@ fun NumberField(
     )
 }
 
+@Composable
+fun NumberField(
+    value: Double?,
+    onValueChange: (Double?) -> Unit,
+    labelText: String,
+    modifier: Modifier = Modifier,
+    prefix: @Composable (() -> Unit)? = null,
+    imeAction: ImeAction = ImeAction.Next,
+) {
+    OutlinedTextField(
+        value?.toString().orEmpty(),
+        onValueChange = { v -> onValueChange(v.toDoubleOrNull()) },
+        prefix = prefix,
+        label = { Text(labelText) },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Decimal,
+            imeAction = imeAction
+        ),
+        singleLine = true,
+        modifier = modifier
+    )
+}
+
 class SalaryData {
     var perAmount by mutableStateOf(PerAmount.Hourly)
     var amount by mutableStateOf("50")
@@ -232,96 +333,129 @@ class SalaryData {
     var holidaysPerYear by mutableStateOf<Int?>(10)
     var vacationDaysPerYear by mutableStateOf<Int?>(15)
 
+    var isRaise by mutableStateOf(false)
+
     val amounts by derivedStateOf {
-        runCatching {
-            val amount = requireNotNull(amount.toDoubleOrNull())
-            val hoursPerWeek = requireNotNull(hoursPerWeek.toDoubleOrNull())
-            val daysPerWeek = requireNotNull(daysPerWeek)
-            val holidaysPerYear = requireNotNull(holidaysPerYear)
-            val vacationDaysPerYear = requireNotNull(vacationDaysPerYear)
+        getSalaries(amount.toDoubleOrNull())
+    }
 
-            val offDays = holidaysPerYear + vacationDaysPerYear
-            val weeksPerYear = 52.0
-            val monthsPerYear = 12.0
-            val quartersPerYear = 4.0
+    var raisePercentage by mutableStateOf<Double?>(0.0)
 
-            val weeklyHours = hoursPerWeek
-            val dailyHours = hoursPerWeek / daysPerWeek
-            val monthlyHours = weeklyHours * weeksPerYear / monthsPerYear
-            val quarterlyHours = weeklyHours * weeksPerYear / quartersPerYear
-
-            fun getSalaryResults(hourlyAmount: Double): SalaryResults {
-                val adjustedYear = hourlyAmount * weeklyHours * (weeksPerYear - offDays / 5)
-                return SalaryResults(
-                    hourly = Adjustments(
-                        unadjusted = hourlyAmount,
-                        adjusted = adjustedYear / 260 / dailyHours
-                    ),
-                    daily = Adjustments(
-                        unadjusted = hourlyAmount * dailyHours,
-                        adjusted = adjustedYear / 260
-                    ),
-                    weekly = Adjustments(
-                        unadjusted = hourlyAmount * weeklyHours,
-                        adjusted = adjustedYear / weeksPerYear
-                    ),
-                    biWeekly = Adjustments(
-                        unadjusted = hourlyAmount * weeklyHours * 2,
-                        adjusted = adjustedYear / weeksPerYear * 2
-                    ),
-                    semiMonthly = Adjustments(
-                        unadjusted = hourlyAmount * monthlyHours * monthsPerYear / 24,
-                        adjusted = adjustedYear / 24
-                    ),
-                    monthly = Adjustments(
-                        unadjusted = hourlyAmount * monthlyHours,
-                        adjusted = adjustedYear / monthsPerYear
-                    ),
-                    quarterly = Adjustments(
-                        unadjusted = hourlyAmount * quarterlyHours,
-                        adjusted = adjustedYear / quartersPerYear
-                    ),
-                    yearly = Adjustments(
-                        unadjusted = hourlyAmount * weeklyHours * weeksPerYear,
-                        adjusted = adjustedYear
-                    )
-                )
-            }
-
-            when (perAmount) {
-                PerAmount.Hourly -> getSalaryResults(amount)
-
-                PerAmount.Daily -> getSalaryResults(amount / dailyHours)
-
-                PerAmount.Weekly -> getSalaryResults(amount / weeklyHours)
-
-                PerAmount.BiWeekly -> getSalaryResults(amount / 2 / weeklyHours)
-
-                PerAmount.SemiMonthly -> {
-                    val hourly = amount / monthlyHours * monthsPerYear / 24
-                    getSalaryResults(hourly)
-                }
-
-                PerAmount.Monthly -> getSalaryResults(amount / monthlyHours)
-
-                PerAmount.Quarterly -> getSalaryResults(amount / quarterlyHours)
-
-                PerAmount.Yearly -> getSalaryResults(amount / weeklyHours / weeksPerYear)
-            }
-        }
-            .getOrDefault(
-                SalaryResults(
-                    hourly = Adjustments(0.0),
-                    daily = Adjustments(0.0),
-                    weekly = Adjustments(0.0),
-                    biWeekly = Adjustments(0.0),
-                    semiMonthly = Adjustments(0.0),
-                    monthly = Adjustments(0.0),
-                    quarterly = Adjustments(0.0),
-                    yearly = Adjustments(0.0),
+    val raise by derivedStateOf {
+        if (isRaise)
+            Raise(
+                raisePercentage ?: 0.0,
+                getSalaries(
+                    runCatching { amount.toDoubleOrNull() }
+                        .getOrNull()
+                        ?.let { it * ((raisePercentage ?: 0.0) / 100) }
                 )
             )
+        else
+            null
     }
+
+    val fullRaiseValues by derivedStateOf {
+        if (isRaise)
+            getSalaries(
+                runCatching { amount.toDoubleOrNull() }
+                    .getOrNull()
+                    ?.let { it + (it * ((raisePercentage ?: 0.0) / 100)) }
+            )
+        else
+            null
+    }
+
+    fun getSalaries(
+        amount: Double?,
+    ): SalaryResults = runCatching {
+        val amount = requireNotNull(amount)
+        val hoursPerWeek = requireNotNull(hoursPerWeek.toDoubleOrNull())
+        val daysPerWeek = requireNotNull(daysPerWeek)
+        val holidaysPerYear = requireNotNull(holidaysPerYear)
+        val vacationDaysPerYear = requireNotNull(vacationDaysPerYear)
+
+        val offDays = holidaysPerYear + vacationDaysPerYear
+        val weeksPerYear = 52.0
+        val monthsPerYear = 12.0
+        val quartersPerYear = 4.0
+
+        val weeklyHours = hoursPerWeek
+        val dailyHours = hoursPerWeek / daysPerWeek
+        val monthlyHours = weeklyHours * weeksPerYear / monthsPerYear
+        val quarterlyHours = weeklyHours * weeksPerYear / quartersPerYear
+
+        fun getSalaryResults(hourlyAmount: Double): SalaryResults {
+            val adjustedYear = hourlyAmount * weeklyHours * (weeksPerYear - offDays / 5)
+            return SalaryResults(
+                hourly = Adjustments(
+                    unadjusted = hourlyAmount,
+                    adjusted = adjustedYear / 260 / dailyHours
+                ),
+                daily = Adjustments(
+                    unadjusted = hourlyAmount * dailyHours,
+                    adjusted = adjustedYear / 260
+                ),
+                weekly = Adjustments(
+                    unadjusted = hourlyAmount * weeklyHours,
+                    adjusted = adjustedYear / weeksPerYear
+                ),
+                biWeekly = Adjustments(
+                    unadjusted = hourlyAmount * weeklyHours * 2,
+                    adjusted = adjustedYear / weeksPerYear * 2
+                ),
+                semiMonthly = Adjustments(
+                    unadjusted = hourlyAmount * monthlyHours * monthsPerYear / 24,
+                    adjusted = adjustedYear / 24
+                ),
+                monthly = Adjustments(
+                    unadjusted = hourlyAmount * monthlyHours,
+                    adjusted = adjustedYear / monthsPerYear
+                ),
+                quarterly = Adjustments(
+                    unadjusted = hourlyAmount * quarterlyHours,
+                    adjusted = adjustedYear / quartersPerYear
+                ),
+                yearly = Adjustments(
+                    unadjusted = hourlyAmount * weeklyHours * weeksPerYear,
+                    adjusted = adjustedYear
+                )
+            )
+        }
+
+        when (perAmount) {
+            PerAmount.Hourly -> getSalaryResults(amount)
+
+            PerAmount.Daily -> getSalaryResults(amount / dailyHours)
+
+            PerAmount.Weekly -> getSalaryResults(amount / weeklyHours)
+
+            PerAmount.BiWeekly -> getSalaryResults(amount / 2 / weeklyHours)
+
+            PerAmount.SemiMonthly -> {
+                val hourly = amount / monthlyHours * monthsPerYear / 24
+                getSalaryResults(hourly)
+            }
+
+            PerAmount.Monthly -> getSalaryResults(amount / monthlyHours)
+
+            PerAmount.Quarterly -> getSalaryResults(amount / quarterlyHours)
+
+            PerAmount.Yearly -> getSalaryResults(amount / weeklyHours / weeksPerYear)
+        }
+    }
+        .getOrDefault(
+            SalaryResults(
+                hourly = Adjustments(0.0),
+                daily = Adjustments(0.0),
+                weekly = Adjustments(0.0),
+                biWeekly = Adjustments(0.0),
+                semiMonthly = Adjustments(0.0),
+                monthly = Adjustments(0.0),
+                quarterly = Adjustments(0.0),
+                yearly = Adjustments(0.0),
+            )
+        )
 }
 
 /**
@@ -377,3 +511,8 @@ enum class PerAmount {
     Quarterly,
     Yearly
 }
+
+data class Raise(
+    val amount: Double,
+    val salaryResults: SalaryResults,
+)
